@@ -240,13 +240,17 @@ with col1:
 with col2:
     zielpreis = st.number_input(f'Zielpreis für {selected_ticker}', value=0.0)
 
-# Schaltfläche zum Speichern
 with col3:
-    if st.button('Speichern'):
-        # Zielpreis in die Datei speichern
-        watchlist_data.loc[watchlist_data['Ticker'] == selected_ticker, 'Zielpreis (kaufen)'] = zielpreis
-        save_watchlist_to_csv(watchlist_data)
-        st.success(f'Zielpreis für {selected_ticker} gespeichert.')
+    options2 = ['kaufen', 'verkaufen']
+    selected_variant = st.selectbox('Setzen der Variante', options2)
+
+# Schaltfläche zum Speichern --> hier auskommentiert, da ganz unten nochmal zum automatischen Speichern
+#with col3:
+#    if st.button('Speichern'):
+#        # Zielpreis in die Datei speichern
+#        watchlist_data.loc[watchlist_data['Ticker'] == selected_ticker, 'Zielpreis (kaufen)'] = zielpreis
+#        save_watchlist_to_csv(watchlist_data)
+#        st.success(f'Zielpreis für {selected_ticker} gespeichert.')
 
 
 

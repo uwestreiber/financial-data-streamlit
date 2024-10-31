@@ -23,8 +23,5 @@ backtrader
 streamlit-autorefresh
 streamlit-notifications
 bt
-torch>=1.8
-ultralytics
-ultralyticsplus
 opencv-python-headless
 opencv_python
