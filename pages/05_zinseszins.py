@@ -52,7 +52,8 @@ investments = {
     "MSCI Argentinia": "ARGT",
     "NIFTY 50": "^NSEI",
     "Smcndctrs ETF": "VVSM.DE",
-    "Rbtcs & AI ETF": "XB0T.DE"
+    "Rbtcs & AI ETF": "XB0T.DE",
+    "MSCI World IT": "XDWT.MI"
 }
 
 # DataFrame zur Speicherung der Ergebnisse
