@@ -585,12 +585,16 @@ print(df_rsi.tail(10))
 fig1_old = go.Figure()
 
 # Erster Plot: Preis, EMA50 und EMA200 auf primärer y-Achse
+latest_close_price = float(latest_data['Close'].iloc[-1]) if not latest_data['Close'].empty else 0.00
+
 fig1_old.add_trace(go.Scatter(x=data.index, y=data['Close'], name=f"Preis (aktuellster Heute: {latest_close_price:.2f})", line=dict(color='blue')))
 fig1_old.add_trace(go.Scatter(x=data.index, y=data['EMA50'], name='EMA 50', line=dict(color='purple', dash='dot')))
 fig1_old.add_trace(go.Scatter(x=data.index, y=data['EMA200'], name='EMA 200', line=dict(color='#DAA520', dash='dot')))
 
 # Zweiter Plot: RSI auf sekundärer y-Achse
 fig1_old.add_trace(go.Scatter(x=data.index, y=data['RSI'], name=f'RSI (aktuellster Heute: {latest_rsi:.2f})', line=dict(color='rgba(128, 0, 128, 0.3)'), yaxis="y2"))
+
+
 
 # Layout-Anpassungen
 fig1_old.update_layout(
@@ -810,7 +814,7 @@ calculate_and_display_gap(data, input_value=0.0, latest_price=latest_price)
 
 st.plotly_chart(fig2, use_container_width=True)
 
-st.write(f"Letzter Preis: {latest_close_price.round(2)} in {currency} um: {latest_time} Uhr (not local time)")
+st.write(f"Letzter Preis: {latest_close_price:.2f} in {currency} um: {latest_time} Uhr (not local time)")
 #st.dataframe(df)
 
 ##############Notzizfeld (START)

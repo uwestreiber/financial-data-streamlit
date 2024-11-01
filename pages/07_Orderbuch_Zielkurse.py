@@ -33,12 +33,25 @@ def send_notification(message, description, notification_type="info"):
 #############             WATCHLIST                    #############
 # Funktion zum Laden der Watchlist
 def load_watchlist_from_csv(filename="portfolio/watchlist.csv"):
+    # Definiere die erwarteten Spaltennamen und deren Reihenfolge
+    expected_columns = ["Ticker", "Kurzname", "Zielpreis (kaufen)", "% Diff. (Kauf)", "Zielpreis (verkaufen)", "% Diff. (Verkauf)", "Kurs", "Update"]
+    
     if os.path.exists(filename):
+        # CSV-Datei laden
         watchlist_data = pd.read_csv(filename, sep=';', encoding="utf-8")
+        
+        # Fehlende Spalten initialisieren
+        for col in expected_columns:
+            if col not in watchlist_data.columns:
+                watchlist_data[col] = None  # Setze fehlende Spalten auf None
+        
+        # Daten in die richtige Reihenfolge bringen
+        watchlist_data = watchlist_data.reindex(columns=expected_columns)
+        
         return watchlist_data
     else:
         st.warning(f"Keine Datei {filename} gefunden, eine neue Watchlist wird erstellt.")
-        return pd.DataFrame(columns=["Ticker", "Kurzname", "Zielpreis (kaufen)", "Kurs", "Update", "% Differenz"])
+        return pd.DataFrame(columns=expected_columns)
 
 # Funktion zum Speichern der Watchlist
 def save_watchlist_to_csv(watchlist_data, filename="portfolio/watchlist.csv"):
@@ -215,22 +228,18 @@ for ticker in options:
         new_row = {
             "Ticker": ticker,
             "Kurzname": short_name,
-            "Kurs": None,
-            "Update": None,
             "Zielpreis (kaufen)": None,
-            "% Differenz": None
+            "% Diff. (Kauf)": None,
+            "Zielpreis (verkaufen)": None,
+            "% Diff. (Verkauf)": None,
+            "Kurs": None,
+            "Update": None
         }
         watchlist_data = pd.concat([watchlist_data, pd.DataFrame([new_row])], ignore_index=True)
 
-# Intervall in Sekunden festlegen
-refresh_rate = 1800  # 10 Minuten = 600
-
-# Auto-Refresh: Seite alle 'refresh_rate' Sekunden neu laden
-refresh_interval = st_autorefresh(interval=refresh_rate * 1000, key="datarefresh")
-
 
 # Layout mit drei Spalten in einer Zeile
-col1, col2, col3 = st.columns(3)
+col1, col2, col3, col4 = st.columns(4)
 
 # Dropdown mit der globalen Variable 'options'
 with col1:
@@ -244,19 +253,38 @@ with col3:
     options2 = ['kaufen', 'verkaufen']
     selected_variant = st.selectbox('Setzen der Variante', options2)
 
-# Schaltfläche zum Speichern --> hier auskommentiert, da ganz unten nochmal zum automatischen Speichern
-#with col3:
-#    if st.button('Speichern'):
-#        # Zielpreis in die Datei speichern
-#        watchlist_data.loc[watchlist_data['Ticker'] == selected_ticker, 'Zielpreis (kaufen)'] = zielpreis
-#        save_watchlist_to_csv(watchlist_data)
-#        st.success(f'Zielpreis für {selected_ticker} gespeichert.')
+with col4:
+    # Speichern des Zielpreises basierend auf der Variante
+    if st.button('Speichern'):
+        if selected_variant == 'kaufen':
+            watchlist_data.loc[watchlist_data['Ticker'] == selected_ticker, 'Zielpreis (kaufen)'] = zielpreis
+        elif selected_variant == 'verkaufen':
+            watchlist_data.loc[watchlist_data['Ticker'] == selected_ticker, 'Zielpreis (verkaufen)'] = zielpreis
 
+        # CSV-Datei aktualisieren
+        save_watchlist_to_csv(watchlist_data)
+        
+        # Erfolgsnachricht anzeigen
+        st.success(f"Zielpreis für {selected_ticker} als '{selected_variant}' gespeichert.")
 
-
-
-# Laden der Watchlist
-watchlist_data = load_watchlist_from_csv("portfolio/watchlist.csv")
+# Realtime-Kurse abrufen und die Watchlist aktualisieren
+for index, row in watchlist_data.iterrows():
+    ticker = row['Ticker']
+    kurs, update_time = get_realtime_price(ticker)
+    watchlist_data.at[index, "Kurs"] = kurs
+    watchlist_data.at[index, "Update"] = update_time
+    
+    # Berechnung der % Differenzen für Kauf und Verkauf
+    zielpreis_kaufen = row['Zielpreis (kaufen)']
+    zielpreis_verkaufen = row['Zielpreis (verkaufen)']
+    
+    if pd.notnull(kurs) and pd.notnull(zielpreis_kaufen) and zielpreis_kaufen != 0:
+        diff_kauf = ((kurs - zielpreis_kaufen) / zielpreis_kaufen) * 100
+        watchlist_data.at[index, '% Diff. (Kauf)'] = round(diff_kauf, 1)
+    
+    if pd.notnull(kurs) and pd.notnull(zielpreis_verkaufen) and zielpreis_verkaufen != 0:
+        diff_verkauf = ((kurs - zielpreis_verkaufen) / zielpreis_verkaufen) * 100
+        watchlist_data.at[index, '% Diff. (Verkauf)'] = round(diff_verkauf, 1)
 
 # Abrufen der Realtime-Kurse und Aktualisieren der "% Differenz" (Verwendung des Rückgabewertes für Kurs aus dem Tupel Kurs und Datum)
 for index, row in watchlist_data.iterrows():
@@ -273,16 +301,24 @@ for index, row in watchlist_data.iterrows():
     if pd.notnull(kurs) and pd.notnull(zielpreis) and zielpreis != 0:
         differenz = ((kurs - zielpreis) / zielpreis) * 100
         watchlist_data.at[index, '% Differenz'] = round(differenz, 1)
-        print(f"{differenz:.1f}")
         
         # Check ob der Wert unter 2 gefallen ist und eine Benachrichtigung auslösen
         if differenz < 2:
             short_name = row['Kurzname']
             message = "Info Kaufkurs"
             description = f"Der aktuelle Kurs von {short_name} ist noch {differenz:.1f}% vom Zielpreis (kaufen) entfernt."
-            send_notification(message, description, notification_type="info")
+            #send_notification(message, description, notification_type="info")
 
 # Speichern der aktualisierten Watchlist
 save_watchlist_to_csv(watchlist_data)
+print("Tabelle Watchlist:")
+print(watchlist_data)
+
+# Neuordnung der Spalten
+watchlist_data = watchlist_data[["Ticker", "Kurzname", "Zielpreis (kaufen)", "% Diff. (Kauf)", "Zielpreis (verkaufen)", "% Diff. (Verkauf)", "Kurs", "Update"]]
+
+# Auto-Refresh: Seite alle 'refresh_rate' Sekunden neu laden
+refresh_rate = 1800  # 10 Minuten = 600
+refresh_interval = st_autorefresh(interval=refresh_rate * 1000, key="datarefresh")
 
 st.dataframe(watchlist_data, use_container_width=True, height=800)
