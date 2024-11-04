@@ -680,6 +680,7 @@ else:
                             xanchor='left', yanchor='middle', font=dict(color=color))
 
 #name=f"{ratios[i]*100:.1f}%; {level:.2f}")
+print(f'Level: {level}, Type: {type(level)}')
 
 # Layout-Anpassungen
 fig1.update_layout(
