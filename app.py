@@ -676,7 +676,7 @@ else:
                        x0=fib_start_date, y0=level, x1=end_date, y1=level,
                        line=dict(color=color, dash="dot"),
                        name=f"{ratios[i]*100:.1f}%; {level}")
-        fig1.add_annotation(x=end_date, y=level, text=f"{ratios[i]*100:.1f}%; {level:.2f}", showarrow=False,
+        fig1.add_annotation(x=end_date, y=level, text=f"{ratios[i]*100:.1f}%; {level}", showarrow=False,
                             xanchor='left', yanchor='middle', font=dict(color=color))
 
 #name=f"{ratios[i]*100:.1f}%; {level:.2f}")
