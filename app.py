@@ -697,7 +697,9 @@ fig1.add_trace(go.Scatter(x=data.index, y=data['RSI'], name=f'RSI (aktuellster H
 print("Ausgabe des data Frame:")
 print(data.columns)
 
-
+# Sicherstellen, dass die Spalten numerisch sind
+data['Close'] = pd.to_numeric(data['Close'], errors='coerce')
+data['Open'] = pd.to_numeric(data['Open'], errors='coerce')
 
 # Zweiter Plot: MACD & Signal im unteren Subplot (fig2)
 #data['color'] = ['green' if data['Close'][i] >= data['Open'][i] else 'red' for i in range(len(data))]
@@ -705,6 +707,7 @@ print(data.columns)
 #data['color'] = ['green' if data['Close'].iloc[i] >= data['Open'].iloc[i] else 'red' for i in range(len(data))]
 # Nutze apply, um die Berechnung für jede Zeile vorzunehmen
 data['color'] = data.apply(lambda row: 'green' if row['Close'] >= row['Open'] else 'red', axis=1)
+
 
 fig2 = sp.make_subplots(rows=3, cols=1, shared_xaxes=True, row_heights=[0.6, 0.2, 0.2])
 
