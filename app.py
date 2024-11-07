@@ -679,9 +679,6 @@ else:
         fig1.add_annotation(x=end_date, y=level, text=f"{ratios[i]*100:.1f}%; {level}", showarrow=False,
                             xanchor='left', yanchor='middle', font=dict(color=color))
 
-#name=f"{ratios[i]*100:.1f}%; {level:.2f}")
-print(f'Level: {level}, Type: {type(level)}')
-
 # Layout-Anpassungen
 fig1.update_layout(
     #title=f"Entwicklung (bis {end_date}) Candlestick {stock_yfinance} mit RSI & EMAs:",
@@ -697,12 +694,15 @@ fig1.add_trace(go.Scatter(x=data.index, y=data['RSI'], name=f'RSI (aktuellster H
 
 
 
-
+print("Ausgabe des data Frame:")
+print(data.columns)
 
 
 
 # Zweiter Plot: MACD & Signal im unteren Subplot (fig2)
-data['color'] = ['green' if data['Close'][i] >= data['Open'][i] else 'red' for i in range(len(data))]
+#data['color'] = ['green' if data['Close'][i] >= data['Open'][i] else 'red' for i in range(len(data))]
+# Überarbeite den Code für die Farbberechnung mit `.iloc`
+data['color'] = ['green' if data['Close'].iloc[i] >= data['Open'].iloc[i] else 'red' for i in range(len(data))]
 
 fig2 = sp.make_subplots(rows=3, cols=1, shared_xaxes=True, row_heights=[0.6, 0.2, 0.2])
 
