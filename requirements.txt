@@ -1,16 +1,14 @@
-altair
 numpy==1.26.4
 pandas==2.2.2
-pydeck
 yfinance
 streamlit>=1.8.0
 seaborn
 matplotlib
-plotly
-requests
+plotly==5.23.0
+requests==2.32.3
 quandl
 alpha_vantage
-pandas_ta
+pandas_ta==0.3.14b0
 newsapi-python
 wbdata
 investpy
@@ -22,5 +20,3 @@ backtrader
 streamlit-autorefresh
 streamlit-notifications
 bt
-opencv-python-headless
-opencv_python
