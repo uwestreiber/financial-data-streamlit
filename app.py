@@ -705,6 +705,11 @@ def determine_color(row):
         return 'red'
 
 
+
+############################
+
+
+
 # Zweiter Plot: MACD & Signal im unteren Subplot (fig2)
 #Umwandlung in numerische Werte und NaN
 data['Open'] = pd.to_numeric(data['Open'], errors='coerce')
