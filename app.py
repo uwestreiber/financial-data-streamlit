@@ -700,6 +700,13 @@ fig1.add_trace(go.Scatter(x=data.index, y=data['RSI'], name=f'RSI (aktuellster H
 #print(type(data['Close']))
 #print(data['Close'].head())
 #data[['Close']].to_csv('close_values.csv', index=True)
+#data['Open'].replace('', np.nan, inplace=True)
+#data['Close'].replace('', np.nan, inplace=True)
+data['Open'] = data['Open'].fillna(method='ffill')
+data['Close'] = data['Close'].fillna(method='ffill')
+
+
+#data[['Open', 'Close']].to_csv('open_close_values.csv', index=True)
 
 
 # Zweiter Plot: MACD & Signal im unteren Subplot (fig2)
@@ -709,6 +716,7 @@ fig1.add_trace(go.Scatter(x=data.index, y=data['RSI'], name=f'RSI (aktuellster H
 # Nutze apply, um die Berechnung für jede Zeile vorzunehmen
 data['color'] = data.apply(lambda row: 'green' if row['Close'] >= row['Open'] else 'red', axis=1)
 
+data[['Open', 'Close', 'color']].to_csv('open_close_color_values.csv', index=True)
 
 fig2 = sp.make_subplots(rows=3, cols=1, shared_xaxes=True, row_heights=[0.6, 0.2, 0.2])
 
