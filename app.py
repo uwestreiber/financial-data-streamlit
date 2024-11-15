@@ -709,10 +709,13 @@ def determine_color(row):
 #Umwandlung in numerische Werte und NaN
 data['Open'] = pd.to_numeric(data['Open'], errors='coerce')
 data['Close'] = pd.to_numeric(data['Close'], errors='coerce')
+zeile = 2
+row_to_test = data.iloc[zeile]
 
 # Nutze apply, um die Berechnung für jede Zeile vorzunehmen
 data['color'] = data.apply(determine_color, axis=1)
-
+color_result = determine_color(row_to_test)
+st.write(f"Die berechnete Farbe für Zeile {zeile+1} ist: {color_result}")
 
 st.dataframe(data[['Open', 'Close', 'color']].head(10))
 #data[['Open', 'Close', 'color']].to_csv('open_close_color_values.csv', index=True)
