@@ -205,7 +205,7 @@ def embed_in_google_translate(url, target_lang='de'):
 
 # Daten aus yfinance holen und Ticker-Symbol
 # Liste der vordefinierten Optionen
-options = ['NVD.DE', 'NVDA', 'ETH-EUR', 'ZAL.DE', 'TL0.DE', 'TSLA', 'YOU.DE', '47R.F', 'ZIP', 'HFG.DE', 'ARM', 'ONTO', '1CIA.BE', 'VIST', '22UA.DE', 'BNTX', 'WLD-USD', 'RENDER-USD', 'META', 'ARGT', 'SMHN.DE', 'XDWT.MI']
+options = ['NVD.DE', 'NVDA', 'ETH-EUR', 'ZAL.DE', 'TL0.DE', 'TSLA', 'YOU.DE', '47R.F', 'ZIP', 'HFG.DE', 'ARM', 'ONTO', 'NNM.F', 'VIST', '1CIA.F', '22UA.DE', 'BNTX', 'WLD-USD', 'RENDER-USD', 'META', 'ARGT', 'SMHN.DE', 'XDWT.MI']
 
 # Layout, um die selectbox und das text_input nebeneinander anzuordnen
 col1, col2 = st.columns(2)
@@ -693,33 +693,25 @@ fig1.update_layout(
 fig1.add_trace(go.Scatter(x=data.index, y=data['RSI'], name=f'RSI (aktuellster Heute: {latest_rsi:.2f})', line=dict(color='rgba(128, 0, 128, 0.3)'), yaxis="y2"))
 
 
-
-#print("Ausgabe des data Frame:")
-#print(data.columns)
-
-#print(type(data['Close']))
-#print(data['Close'].head())
-#data[['Close']].to_csv('close_values.csv', index=True)
-#data['Open'].replace('', np.nan, inplace=True)
-#data['Close'].replace('', np.nan, inplace=True)
 data['Open'] = data['Open'].fillna(method='ffill')
 data['Close'] = data['Close'].fillna(method='ffill')
 st.dataframe(data[['Open', 'Close']].head(20))
 st.dataframe(data[['Open', 'Close']].tail(20))
 
-#data[['Open', 'Close']].to_csv('open_close_values.csv', index=True)
+def determine_color(row):
+    if row['Close'] >= row['Open']:
+        return 'green'
+    else:
+        return 'red'
 
 
 # Zweiter Plot: MACD & Signal im unteren Subplot (fig2)
-#data['color'] = ['green' if data['Close'][i] >= data['Open'][i] else 'red' for i in range(len(data))]
-# Überarbeite den Code für die Farbberechnung mit `.iloc`
-#data['color'] = ['green' if data['Close'].iloc[i] >= data['Open'].iloc[i] else 'red' for i in range(len(data))]
-
 # Nutze apply, um die Berechnung für jede Zeile vorzunehmen
-data['color'] = data.apply(lambda row: 'green' if row['Close'] >= row['Open'] else 'red', axis=1)
+#data['color'] = data.apply(lambda row: 'green' if row['Close'] >= row['Open'] else 'red', axis=1)
+data['color'] = data.apply(determine_color, axis=1)
+
+
 st.dataframe(data[['Open', 'Close', 'color']].head(10))
-
-
 #data[['Open', 'Close', 'color']].to_csv('open_close_color_values.csv', index=True)
 
 fig2 = sp.make_subplots(rows=3, cols=1, shared_xaxes=True, row_heights=[0.6, 0.2, 0.2])
