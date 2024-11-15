@@ -694,12 +694,13 @@ fig1.add_trace(go.Scatter(x=data.index, y=data['RSI'], name=f'RSI (aktuellster H
 
 
 
-print("Ausgabe des data Frame:")
-print(data.columns)
+#print("Ausgabe des data Frame:")
+#print(data.columns)
 
-# Sicherstellen, dass die Spalten numerisch sind
-data['Close'] = pd.to_numeric(data['Close'], errors='coerce')
-data['Open'] = pd.to_numeric(data['Open'], errors='coerce')
+#print(type(data['Close']))
+#print(data['Close'].head())
+#data[['Close']].to_csv('close_values.csv', index=True)
+
 
 # Zweiter Plot: MACD & Signal im unteren Subplot (fig2)
 #data['color'] = ['green' if data['Close'][i] >= data['Open'][i] else 'red' for i in range(len(data))]
