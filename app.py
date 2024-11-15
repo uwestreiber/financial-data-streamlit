@@ -704,7 +704,8 @@ fig1.add_trace(go.Scatter(x=data.index, y=data['RSI'], name=f'RSI (aktuellster H
 #data['Close'].replace('', np.nan, inplace=True)
 data['Open'] = data['Open'].fillna(method='ffill')
 data['Close'] = data['Close'].fillna(method='ffill')
-
+st.dataframe(data[['Open', 'Close']].head(20))
+st.dataframe(data[['Open', 'Close']].tail(20))
 
 #data[['Open', 'Close']].to_csv('open_close_values.csv', index=True)
 
@@ -713,10 +714,13 @@ data['Close'] = data['Close'].fillna(method='ffill')
 #data['color'] = ['green' if data['Close'][i] >= data['Open'][i] else 'red' for i in range(len(data))]
 # Überarbeite den Code für die Farbberechnung mit `.iloc`
 #data['color'] = ['green' if data['Close'].iloc[i] >= data['Open'].iloc[i] else 'red' for i in range(len(data))]
+
 # Nutze apply, um die Berechnung für jede Zeile vorzunehmen
 data['color'] = data.apply(lambda row: 'green' if row['Close'] >= row['Open'] else 'red', axis=1)
+st.dataframe(data[['Open', 'Close', 'color']].head(10))
 
-data[['Open', 'Close', 'color']].to_csv('open_close_color_values.csv', index=True)
+
+#data[['Open', 'Close', 'color']].to_csv('open_close_color_values.csv', index=True)
 
 fig2 = sp.make_subplots(rows=3, cols=1, shared_xaxes=True, row_heights=[0.6, 0.2, 0.2])
 
