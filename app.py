@@ -707,6 +707,13 @@ def determine_color(row):
 
 
 ############################
+# Überprüfe den Typ von 'Open'
+st.write(type(data['Open']))
+st.write(type(data['Close']))
+
+# Falls 'Open' kein Series-Objekt ist, konvertiere es zu einer Series
+if not isinstance(data['Open'], pd.Series):
+    data['Open'] = pd.Series(data['Open'])
 
 
 
