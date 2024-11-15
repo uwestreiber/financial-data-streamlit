@@ -706,8 +706,11 @@ def determine_color(row):
 
 
 # Zweiter Plot: MACD & Signal im unteren Subplot (fig2)
+#Umwandlung in numerische Werte und NaN
+data['Open'] = pd.to_numeric(data['Open'], errors='coerce')
+data['Close'] = pd.to_numeric(data['Close'], errors='coerce')
+
 # Nutze apply, um die Berechnung für jede Zeile vorzunehmen
-#data['color'] = data.apply(lambda row: 'green' if row['Close'] >= row['Open'] else 'red', axis=1)
 data['color'] = data.apply(determine_color, axis=1)
 
 
