@@ -695,11 +695,6 @@ fig1.add_trace(go.Scatter(x=data.index, y=data['RSI'], name=f'RSI (aktuellster H
 
 data['Open'] = data['Open'].fillna(method='ffill')
 data['Close'] = data['Close'].fillna(method='ffill')
-#st.dataframe(data[['Open', 'Close']].head(20))
-#st.dataframe(data[['Open', 'Close']].tail(20))
-
-
-open_close_df = data[['Open', 'Close']].reset_index(drop=True)
 
 def determine_color(row):
     if row['Close'] >= row['Open']:
@@ -707,23 +702,10 @@ def determine_color(row):
     else:
         return 'red'
 
-open_close_df['Color'] = open_close_df.apply(determine_color, axis=1)
-
-############################
-# Überprüfe den Typ von 'Open'
-#st.write(type(data['Open']))
-#st.write(type(data['Close']))
-st.write(type(open_close_df))
-
+data['color'] = data.apply(determine_color, axis=1)
 
 
 # Zweiter Plot: MACD & Signal im unteren Subplot (fig2)
-
-
-
-#st.dataframe(data[['Open', 'Close', 'color']].head(10))
-#data[['Open', 'Close', 'color']].to_csv('open_close_color_values.csv', index=True)
-
 fig2 = sp.make_subplots(rows=3, cols=1, shared_xaxes=True, row_heights=[0.6, 0.2, 0.2])
 
 # Hauptdiagramm: MACD und Signal
