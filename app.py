@@ -713,6 +713,7 @@ open_close_df['Color'] = open_close_df.apply(determine_color, axis=1)
 # Überprüfe den Typ von 'Open'
 #st.write(type(data['Open']))
 #st.write(type(data['Close']))
+st.write(type(open_close_df))
 
 
 
