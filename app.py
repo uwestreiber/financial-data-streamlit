@@ -696,13 +696,13 @@ fig1.add_trace(go.Scatter(x=data.index, y=data['RSI'], name=f'RSI (aktuellster H
 data['Open'] = data['Open'].fillna(method='ffill')
 data['Close'] = data['Close'].fillna(method='ffill')
 
-def determine_color(row):
-    if row['Close'] >= row['Open']:
-        return 'green'
-    else:
-        return 'red'
+#def determine_color(row):
+#    if row['Close'] >= row['Open']:
+#        return 'green'
+#    else:
+#        return 'red'
 
-data['color'] = data.apply(determine_color, axis=1)
+#data['color'] = data.apply(determine_color, axis=1)
 
 
 # Zweiter Plot: MACD & Signal im unteren Subplot (fig2)
@@ -786,7 +786,8 @@ fig2.add_trace(go.Scatter(
 
 
 
-fig2.add_trace(go.Bar(x=data.index, y=data['Volume'], name='Volumen', marker_color=data['color']), row=3, col=1)
+#fig2.add_trace(go.Bar(x=data.index, y=data['Volume'], name='Volumen', marker_color=data['color']), row=3, col=1)
+fig2.add_trace(go.Bar(x=data.index, y=data['Volume'], name='Volumen', marker_color='orange'), row=3, col=1)
 
 # Layout-Anpassungen für den zweiten Plot
 fig2.update_layout(height=600, title=f"Entwicklung (bis {end_date}) MACD- und Signalkurve von {stock_yfinance}:")

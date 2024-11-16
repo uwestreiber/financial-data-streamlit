@@ -11,7 +11,6 @@ alpha_vantage
 pandas_ta==0.3.14b0
 newsapi-python
 wbdata
-investpy
 beautifulsoup4
 streamlit-aggrid
 googletrans==4.0.0-rc1
