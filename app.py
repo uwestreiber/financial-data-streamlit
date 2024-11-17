@@ -205,8 +205,8 @@ def embed_in_google_translate(url, target_lang='de'):
 
 # Daten aus yfinance holen und Ticker-Symbol
 # Liste der vordefinierten Optionen
-options = ['NVD.DE', 'NVDA', 'ETH-EUR', 'ZAL.DE', 'TL0.DE', 'TSLA', 'YOU.DE', '47R.F', 'ZIP', 'HFG.DE', 'ARM', 'ONTO', 'NNM.F', 'VIST', '1CIA.F', '22UA.DE', 'BNTX', 'WLD-USD', 'RENDER-USD', 'META', 'ARGT', 'SMHN.DE', 'XDWT.MI']
-
+#options = ['NVD.DE', 'NVDA', 'ETH-EUR', 'ZAL.DE', 'TL0.DE', 'TSLA', 'YOU.DE', '47R.F', 'ZIP', 'HFG.DE', 'ARM', 'ONTO', 'NNM.F', 'VIST', '1CIA.F', '22UA.DE', 'BNTX', 'WLD-USD', 'RENDER-USD', 'META', 'ARGT', 'SMHN.DE', 'XDWT.MI']
+options = ['NVD.DE', 'NVDA', 'TL0.DE', 'TSLA', 'RIVN', 'HFG.DE', 'ARM', 'ONTO', 'META', 'BTC-EUR']
 # Layout, um die selectbox und das text_input nebeneinander anzuordnen
 col1, col2 = st.columns(2)
 
