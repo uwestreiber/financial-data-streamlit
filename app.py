@@ -200,7 +200,7 @@ def translate_text(headlines, target_lang='de'):
 def embed_in_google_translate(url, target_lang='de'):
     return f"https://translate.google.com/translate?hl={target_lang}&sl=auto&tl={target_lang}&u={url}"
 
-#################################################################################################
+####################################################################################################
 
 
 # Daten aus yfinance holen und Ticker-Symbol
