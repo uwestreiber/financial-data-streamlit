@@ -1,0 +1,1 @@
+(26.11.24) Fib Grenzen beachten. Ziel bei mind 50% oder darunter stückweise wieder einsteigen.

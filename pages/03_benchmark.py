@@ -202,26 +202,35 @@ st.dataframe(kennzahlen_one_transponiert)
 
 
 ### TABELLE - Profitablität
-kennzahlen_profitability = pd.DataFrame(columns=['Rohmarge > 40% (%)', 'Gewinnmarge > 10% (%)'])
+#kennzahlen_profitability = pd.DataFrame(columns=['Rohertrag', 'Umsatz', 'Nettoergebnis', 'Rohmarge > 40% (%)','Gewinnmarge > 10% (%)'])
+kennzahlen_profitability = pd.DataFrame(columns=['Rohmarge > 40% (%)','Gewinnmarge > 10% (%)'])
 for ticker in tickers:
     try:
         
         ticker_obj = yf.Ticker(ticker)
         annual_financials = ticker_obj.financials
+        #print(ticker_obj.financials.iloc[5]) --> ich kann zeilen mit iloc ansprechen
+        #print(ticker_obj.financials)
         
         #Rohmarge > 40%
-        gross_profit = annual_financials.loc['Gross Profit'][-1] / 1e9 if 'Gross Profit' in annual_financials.index else np.nan
-        total_revenue = annual_financials.loc['Total Revenue'][-1] / 1e9 if 'Total Revenue' in annual_financials.index else np.nan
+        gross_profit = annual_financials.iloc[annual_financials.index.get_loc('Gross Profit'), 0] / 1e9 if 'Gross Profit' in annual_financials.index else np.nan
+        total_revenue = annual_financials.iloc[annual_financials.index.get_loc('Total Revenue'), 0] / 1e9 if 'Total Revenue' in annual_financials.index else np.nan
         gross_margin = (gross_profit / total_revenue) * 100 if total_revenue else np.nan
         gross_margin = round(gross_margin, 2)        
+        print(f"{ticker}:")
+        print(gross_profit)
+        print(total_revenue)
+        print(gross_margin)
 
         #Gewinnmarge > 10%
-        net_income = annual_financials.loc['Net Income'][-1] / 1e9 if 'Net Income' in annual_financials.index else np.nan
-        total_revenue = annual_financials.loc['Total Revenue'][-1] / 1e9 if 'Total Revenue' in annual_financials.index else np.nan
+        net_income = annual_financials.iloc[annual_financials.index.get_loc('Net Income'), 0] / 1e9 if 'Net Income' in annual_financials.index else np.nan
         profit_margin = (net_income / total_revenue) * 100 if total_revenue else np.nan        
         profit_margin = round(profit_margin, 2)
+        print(net_income)
+        print(profit_margin)
 
         ### Variablen des DataFrame hinzufügen
+        #kennzahlen_profitability.loc[ticker] = [gross_profit, total_revenue, net_income, gross_margin, profit_margin]
         kennzahlen_profitability.loc[ticker] = [gross_margin, profit_margin]
     
     except KeyError as e:
@@ -236,7 +245,9 @@ for ticker in tickers:
         print(f"Fehler (Exception) bei {ticker}: {e}")
         continue
 kennzahlen_profitability_transponiert = kennzahlen_profitability.transpose()
-st.subheader("Profitabilität:")
+st.subheader("Profitabilität (letztes volles Berichtsjahr):")
+st.write("Rohmarge: TBD")
+st.write("Gewinmarge: zeigt den Prozentsatz des Gewinns am Umsatz nach Abzug aller Kosten.")
 st.dataframe(kennzahlen_profitability_transponiert)
 
 
@@ -251,11 +262,11 @@ for ticker in tickers:
         
         ###ROIC > 15%
         #EBIT
-        ebit_roic = annual_financials.loc['EBIT'][-1] / 1e9 if 'EBIT' in annual_financials.index else np.nan
+        ebit_roic = annual_financials.iloc[annual_financials.index.get_loc('EBIT'), 0] / 1e9 if 'EBIT' in annual_financials.index else np.nan
 
         #Tax Rate (annual_financials --> = Tax Provision / Pretax Income)
-        tax_provision = annual_financials.loc['Tax Provision'][-1] / 1e9  if 'Tax Provision' in annual_financials.index else np.nan
-        pretax_income = annual_financials.loc['Pretax Income'][-1] / 1e9  if 'Pretax Income' in annual_financials.index else np.nan
+        tax_provision = annual_financials.iloc[annual_financials.index.get_loc('Tax Provision'), 0] / 1e9  if 'Tax Provision' in annual_financials.index else np.nan
+        pretax_income = annual_financials.iloc[annual_financials.index.get_loc('Pretax Income'), 0] / 1e9  if 'Pretax Income' in annual_financials.index else np.nan
         tax_rate = tax_provision / pretax_income if pretax_income else np.nan
         tax_rate_2 = tax_rate * 100
 
@@ -264,22 +275,22 @@ for ticker in tickers:
         ###Invested Capital (IC) = Short-term debt + Long-term debt + Shareholder equity - Cash/equivalents - Goodwill
         #Short-term debt (annual_balance --> Current Debt)
         #short_term_debt = annual_balance.loc['Current Debt'][-1] / 1e9  if 'Current Debt' in annual_balance.index else 0
-        short_term_debt = annual_balance.loc['Current Debt'][-1] / 1e9 if 'Current Debt' in annual_balance.index and not pd.isna(annual_balance.loc['Current Debt'][-1]) else 0
+        short_term_debt = annual_balance.iloc[annual_balance.index.get_loc('Current Debt'), 0] / 1e9 if 'Current Debt' in annual_balance.index and not pd.isna(annual_balance.iloc[annual_balance.index.get_loc('Current Debt'), 0]) else 0
 
 
         #Long-term debt (annual_balance --> Long Term Debt)
         #long_term_debt = annual_balance.loc['Long Term Debt'][-1] / 1e9  if 'Long Term Debt' in annual_balance.index else 0
-        long_term_debt = annual_balance.loc['Long Term Debt'][-1] / 1e9 if 'Long Term Debt' in annual_balance.index and not pd.isna(annual_balance.loc['Long Term Debt'][-1]) else 0
+        long_term_debt = annual_balance.iloc[annual_balance.index.get_loc('Long Term Debt'), 0] / 1e9 if 'Long Term Debt' in annual_balance.index and not pd.isna(annual_balance.iloc[annual_balance.index.get_loc('Long Term Debt'), 0]) else 0
 
         #Shareholder equity (annual_balance --> Stockholders Equity)
-        stockholders_equity = annual_balance.loc['Stockholders Equity'][-1] / 1e9  if 'Stockholders Equity' in annual_balance.index else 0
+        stockholders_equity = annual_balance.iloc[annual_balance.index.get_loc('Stockholders Equity'), 0] / 1e9  if 'Stockholders Equity' in annual_balance.index else 0
 
         #Cash/equivalents (annual_balance --> Cash And Cash Equivalents)
-        cash_and_cash_equivalents = annual_balance.loc['Cash And Cash Equivalents'][-1] / 1e9  if 'Cash And Cash Equivalents' in annual_balance.index else 0
+        cash_and_cash_equivalents = annual_balance.iloc[annual_balance.index.get_loc('Cash And Cash Equivalents'), 0] / 1e9  if 'Cash And Cash Equivalents' in annual_balance.index else 0
 
         #Goodwill (annual_balance --> Goodwill)
         #goodwill = annual_balance.loc['Goodwill'][-1] if 'Goodwill' in annual_balance.index else np.nan
-        goodwill = annual_balance.loc['Goodwill'][-1] / 1e9  if 'Goodwill' in annual_balance.index else 0
+        goodwill = annual_balance.iloc[annual_balance.index.get_loc('Goodwill'), 0] / 1e9  if 'Goodwill' in annual_balance.index else 0
         if pd.isna(goodwill):
             goodwill = 0
 
@@ -289,10 +300,8 @@ for ticker in tickers:
         roic = round(roic * 100, 2) #in %    
 
         ###ROE (Nettogewinn und Eigenkapital) > TBD
-        net_income = annual_financials.loc['Net Income'][-1] if 'Net Income' in annual_financials.index else np.nan
-        total_equity = annual_balance.loc['Stockholders Equity'][-1] if 'Stockholders Equity' in annual_balance.index else np.nan
-        if net_income is not None and total_equity is not None and total_equity != 0:
-            roe = round((net_income / total_equity) * 100, 2)
+        if net_income is not None and stockholders_equity is not None and stockholders_equity != 0:
+            roe = round((net_income / stockholders_equity) * 100, 2)
         else:
             roe = "N/A"
 
@@ -359,6 +368,7 @@ for ticker in tickers:
         #Berechnung der CAGR Revenue Growth
         total_revenue_beginning = annual_financials.loc['Total Revenue'][-1] / 1e9 if 'Total Revenue' in annual_financials.index else np.nan
         total_revenue_ending = annual_financials.loc['Total Revenue'][0] / 1e9 if 'Total Revenue' in annual_financials.index else np.nan
+        #total_revenue = annual_financials.iloc[annual_financials.index.get_loc('Total Revenue'), 0] / 1e9 if 'Total Revenue' in annual_financials.index else np.nan
         cagr_revenue = (((total_revenue_ending / total_revenue_beginning) ** (1 / (available_years))) - 1) * 100
         cagr_revenue = round(cagr_revenue, 2)
 

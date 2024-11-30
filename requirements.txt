@@ -19,3 +19,4 @@ backtrader
 streamlit-autorefresh
 streamlit-notifications
 bt
+openpyxl

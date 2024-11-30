@@ -130,48 +130,57 @@ quarterly_balance = ticker_obj.quarterly_balance_sheet
 quarterly_cashflow = ticker_obj.quarterly_cashflow
 quarterly_income = ticker_obj.quarterly_income_stmt
 
-def process_quarterly_data(df, metrics, n, additional_metrics=None):
-    result = pd.DataFrame()
-    if not df.empty:
-        quarters = df.columns.strftime('%Y-%m')
-        for i, quarter in enumerate(quarters):
-            row = [df.loc[metric][i] / 1e9 if metric in df.index else np.nan for metric in metrics]
-            if additional_metrics:
-                for metric_func in additional_metrics:
-                    row.append(metric_func(df, i))
-            result[quarter] = row
-        result.index = metrics + [metric_func.__name__ for metric_func in additional_metrics] if additional_metrics else metrics
-        result = result.round(n)
-        # Nur Spalten mit echten Daten behalten
-        result = result.dropna(axis=1, how='all')
-    return result
-
-def calculate_de_ratio(df, i):
-    total_debt = df.loc['Total Debt'][i] / 1e9 if 'Total Debt' in df.index else np.nan
-    total_equity = df.loc['Stockholders Equity'][i] / 1e9 if 'Stockholders Equity' in df.index else np.nan
-    return round(total_debt / total_equity, 2) if total_equity else np.nan
-
-def calculate_total_assets(df, i):
-    current_assets = df.loc['Current Assets'][i] / 1e9 if 'Current Assets' in df.index else np.nan
-    non_current_assets = df.loc['Total Non Current Assets'][i] / 1e9 if 'Total Non Current Assets' in df.index else np.nan
-    return current_assets + non_current_assets if not pd.isna(current_assets) and not pd.isna(non_current_assets) else np.nan
-
 ### Tabelle 1 - Gewinn- und Verlustrechnung
-metrics_gewinn_verlust = ['Total Revenue', 'Gross Profit', 'EBITDA', 'EBIT', 'EBT', 'Net Income']
-data_frame_gewinn_verlust = process_quarterly_data(quarterly_financials, metrics_gewinn_verlust, n)
-st.subheader("Gewinn- und Verlust in Mrd.")
-st.dataframe(data_frame_gewinn_verlust)
+# Überprüfen, ob Quartalsdaten verfügbar sind
+if not quarterly_financials.empty:
+    available_quarters = quarterly_financials.shape[1]
+    num_quarters = available_quarters
 
-### Tabelle 2 - FCF and Others
-metrics_fcf_others = ['Operating Cash Flow', 'Investing Cash Flow', 'Financing Cash Flow', 'Free Cash Flow']
-data_frame_fcf_others = process_quarterly_data(quarterly_cashflow, metrics_fcf_others, n)
-st.subheader("Kapitalfluss in Mrd.")
-st.dataframe(data_frame_fcf_others)
+    # Kennzahlen für Quartalsberichte abrufen
+    data_frame_quarterly = pd.DataFrame(columns=['Umsatz', 'Bruttoertrag', 'EBITDA', 'EBIT', 'EBT', 'Nettoergebnis'])
 
-### Tabelle 3 - Weitere Kennzahlen aus Quartalsberichten
-metrics_balance_sheet = ['Total Debt', 'Stockholders Equity', 'Inventory', 'Finished Goods', 'Current Assets', 'Total Non Current Assets', 'Imaterielle Vermögenswerte']
-additional_metrics = [calculate_de_ratio, calculate_total_assets]
-data_frame_balance_sheet = process_quarterly_data(quarterly_balance, metrics_balance_sheet, n, additional_metrics)
-data_frame_balance_sheet.index = ['Verschuldung', 'Eigenkapital', 'D/E Ratio', 'Inventar', 'Fertige Produkte', 'Anlagevermögen', 'Umlaufvermögen', 'Imaterielle Vermögenswerte', 'Summe Vermögen']
-st.subheader("Kennzahlen aus der Bilanz in Mrd.")
-st.dataframe(data_frame_balance_sheet)
+    for i in range(num_quarters):
+        ## Kennzahlen für Quartalsberichte abrufen
+        # Quartalsjahr
+        quarter_year = quarterly_financials.columns[i].strftime('%Y-%m')
+
+        # Umsatz
+        total_revenue = quarterly_financials.loc['Total Revenue'][i] / 1e9 if 'Total Revenue' in quarterly_financials.index else np.nan
+
+        # Bruttoertrag nach Umsatz
+        gross_profit = quarterly_financials.loc['Gross Profit'][i] / 1e9 if 'Gross Profit' in quarterly_financials.index else np.nan
+
+        # EBITDA
+        ebitda = quarterly_financials.loc['EBITDA'][i] / 1e9 if 'EBITDA' in quarterly_financials.index else np.nan
+
+        # EBIT
+        ebit = quarterly_financials.loc['EBIT'][i] / 1e9 if 'EBIT' in quarterly_financials.index else np.nan
+
+        # EBT bzw.
+        ebt = quarterly_financials.loc['EBT'][i] / 1e9 if 'EBT' in quarterly_financials.index else np.nan
+
+        # Nettoergebnis bzw. Net Income after Tax (NIAT)
+        net_income = quarterly_financials.loc['Net Income'][i] / 1e9 if 'Net Income' in quarterly_financials.index else np.nan
+
+        # Daten dem DataFrame hinzufügen
+        data_frame_quarterly.loc[quarter_year] = [total_revenue, gross_profit, ebitda, ebit, ebt, net_income]
+
+    ## Daten transponieren
+    data_frame_quarterly = data_frame_quarterly.transpose()
+    data_frame_quarterly = data_frame_quarterly.iloc[:, ::-1]  # Spalten umkehren
+    data_frame_quarterly = data_frame_quarterly.round(n)  # alle Zahlen auf n Nachkommastellen runden
+
+    # YoY-Berechnung nur für spezifische Kennzahlen (Umsatz, EBIT, Nettoergebnis)
+    for metric in ['Umsatz', 'EBIT', 'Nettoergebnis']:
+        yoy = data_frame_quarterly.loc[metric].pct_change() * 100  # Vergleich mit dem gleichen Quartal im Vorjahr
+        data_frame_quarterly.loc[f"{metric} YoY (%)"] = yoy.round(2)
+
+else:
+    st.text("Keine Quartalsdaten verfügbar.")
+
+# Reihenfolge der Kennzahlen und YoY-Werte definieren
+new_order = ['Umsatz', 'Umsatz YoY (%)', 'Bruttoertrag', 'EBITDA', 'EBIT', 'EBIT YoY (%)', 'EBT', 'Nettoergebnis', 'Nettoergebnis YoY (%)']
+data_frame_quarterly = data_frame_quarterly.loc[new_order]
+######################################################################################
+st.subheader("Gewinn- und Verlust in Mrd. (Quartalsberichte) mit YoY (%)")
+st.dataframe(data_frame_quarterly)

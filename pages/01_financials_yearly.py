@@ -14,6 +14,11 @@ from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from matplotlib.dates import AutoDateLocator
 
+import warnings 
+warnings.filterwarnings("ignore")
+
+st.set_page_config(layout="wide")
+
 # Klasse für yfinance und als fix für .info
 ########################################### separate Klasse als fix für .info
 # Quelle: https://github.com/ranaroussi/yfinance/issues/1729
@@ -125,8 +130,31 @@ currency = st.session_state.get("currency")
 
 
 
-st.title(f"Ausgewählte Finanzdaten für {stock_yfinance} in {currency}")
 
+
+###########################Navigationsbereich
+
+st.sidebar.title("Anzahl Jahre")
+num_years_financials = st.sidebar.selectbox(
+    "G/V-Rechnung:",
+    options=[4, 5, 6],
+    index=0  # Standardwert: 4 (entspricht dem Index 1 in der Liste)
+)
+
+num_years_cashflow = st.sidebar.selectbox(
+    "Kapitalfluss:",
+    options=[4, 5, 6],
+    index=0  # Standardwert: 4 (entspricht dem Index 1 in der Liste)
+)
+
+num_years_balance = st.sidebar.selectbox(
+    "Bilanz:",
+    options=[4, 5, 6],
+    index=0  # Standardwert: 4 (entspricht dem Index 1 in der Liste)
+)
+
+
+st.title(f"Ausgewählte Finanzdaten für {stock_yfinance} in {currency}")
 ## TEIL UWE'S FINANCE TABLE_JAHRESBERICHTE_________________________________
 # Variablen für yfinance definieren
 annual_financials = ticker_obj.financials
@@ -138,46 +166,53 @@ annual_income = ticker_obj.income_stmt
 # Überprüfen, ob Jahresdaten verfügbar sind
 if not annual_financials.empty:
     available_years = annual_financials.shape[1]
-    num_years = available_years
+    num_years_financials = min(num_years_financials, available_years)
 
     # Kennzahlen für Jahresberichte abrufen
-    for i in range(num_years):
+    data_frame_gewinn_verlust = pd.DataFrame(columns=['Umsatz', 'Bruttoertrag', 'EBITDA', 'EBIT', 'EBT', 'Nettoergebnis'])
 
-        data_frame_gewinn_verlust = pd.DataFrame(columns=['Umsatz', 'Bruttoertrag', 'EBITDA', 'EBIT', 'EBT', 'Nettoergebnis'])
+    for i in range(num_years_financials):
+        ## Kennzahlen für Jahresberichte abrufen
+        # Fiscal Jahr
+        fiscal_year = annual_financials.columns[i].strftime('%Y')
 
-        for i in range(num_years):
-        
-            ## Kennzahlen für Jahresberichte abrufen
-            # Fiscal Jahr
-            fiscal_year = annual_financials.columns[i].strftime('%Y')
+        # Umsatz
+        total_revenue = annual_financials.loc['Total Revenue'][i] / 1e9 if 'Total Revenue' in annual_financials.index else np.nan
 
-            # Umsatz
-            total_revenue = annual_financials.loc['Total Revenue'][i] / 1e9 if 'Total Revenue' in annual_financials.index else np.nan
+        # Bruttoertrag nach Umsatz
+        gross_profit = annual_financials.loc['Gross Profit'][i] / 1e9 if 'Gross Profit' in annual_financials.index else np.nan
 
-            # Bruttoertrag nach Umsatz
-            gross_profit = annual_financials.loc['Gross Profit'][i] / 1e9 if 'Gross Profit' in annual_financials.index else np.nan
+        # EBITDA
+        ebitda = annual_financials.loc['EBITDA'][i] / 1e9 if 'EBITDA' in annual_financials.index else np.nan
 
-            # EBITDA
-            ebitda = annual_financials.loc['EBITDA'][i] / 1e9 if 'EBITDA' in annual_financials.index else np.nan
+        # EBIT
+        ebit = annual_financials.loc['EBIT'][i] / 1e9 if 'EBIT' in annual_financials.index else np.nan
 
-            # EBIT
-            ebit = annual_financials.loc['EBIT'][i] / 1e9 if 'EBIT' in annual_financials.index else np.nan
+        # EBT bzw.
+        ebt = annual_financials.loc['EBT'][i] / 1e9 if 'EBT' in annual_financials.index else np.nan
 
-            # EBT bzw. 
-            ebt = annual_financials.loc['EBT'][i] / 1e9 if 'EBT' in annual_financials.index else np.nan
+        # Nettoergebnis bzw. Net Income after Tax (NIAT)
+        net_income = annual_financials.loc['Net Income'][i] / 1e9 if 'Net Income' in annual_financials.index else np.nan
 
-            # Nettoergebnis bzw. Net Income after Tax (NIAT)
-            net_income = annual_financials.loc['Net Income'][i] / 1e9 if 'Net Income' in annual_financials.index else np.nan
+        # Daten dem DataFrame hinzufügen
+        data_frame_gewinn_verlust.loc[fiscal_year] = [total_revenue, gross_profit, ebitda, ebit, ebt, net_income]
 
-            # Daten dem DataFrame hinzufügen
-            data_frame_gewinn_verlust.loc[fiscal_year] = [total_revenue, gross_profit, ebitda, ebit, ebt, net_income]
+    ## Daten transponieren
+    data_frame_gewinn_verlust = data_frame_gewinn_verlust.transpose()
+    data_frame_gewinn_verlust = data_frame_gewinn_verlust.iloc[:, ::-1]  # Spalten umkehren
+    data_frame_gewinn_verlust = data_frame_gewinn_verlust.round(n)  # alle Zahlen auf n Nachkommastellen runden
 
-        ## Daten transponieren
-        data_frame_gewinn_verlust = data_frame_gewinn_verlust.transpose()
-        data_frame_gewinn_verlust = data_frame_gewinn_verlust.iloc[:, ::-1] # Spalten umkehren
-        data_frame_gewinn_verlust = data_frame_gewinn_verlust.round(n) # alle Zahlen auf n Nachkommastellen runden                        
+    # YoY-Berechnung für Umsatz, EBIT und Nettoergebnis
+    for metric in ['Umsatz', 'EBIT', 'Nettoergebnis']:
+        yoy = data_frame_gewinn_verlust.loc[metric].pct_change() * 100  # YoY berechnen (kein axis nötig)
+        data_frame_gewinn_verlust.loc[f"{metric} YoY (%)"] = yoy.round(2)  # Gerundete Werte hinzufügen
+
 else:
     st.text("Keine Jahresdaten verfügbar.")
+
+# Reihenfolge der Kennzahlen und YoY-Werte definieren
+new_order = ['Umsatz', 'Umsatz YoY (%)', 'Bruttoertrag', 'EBITDA', 'EBIT', 'EBIT YoY (%)', 'EBT', 'Nettoergebnis', 'Nettoergebnis YoY (%)']
+data_frame_gewinn_verlust = data_frame_gewinn_verlust.loc[new_order]
 ######################################################################################
 st.subheader("Gewinn- und Verlust in Mrd.")
 st.dataframe(data_frame_gewinn_verlust)
@@ -191,40 +226,45 @@ st.dataframe(data_frame_gewinn_verlust)
 # Überprüfen, ob Jahresdaten verfügbar sind
 if not annual_cashflow.empty:
     available_years = annual_cashflow.shape[1]
-    num_years = available_years
+    num_years_cashflow = min(num_years_cashflow, available_years)
 
     # Kennzahlen für Jahresberichte abrufen
-    for i in range(num_years):
+    data_frame_fcf_others = pd.DataFrame(columns=['Operating Cashflow', 'Investing Cashflow', 'Financing Cashflow', 'Free Cashflow'])
 
-        data_frame_fcf_others = pd.DataFrame(columns=['Operating Cashflow', 'Investing Cashflow', 'Financing Cashflow', 'Free Cashflow'])
+    for i in range(num_years_cashflow):
+        ## Kennzahlen für Jahresberichte abrufen
+        # Fiscal Jahr
+        fiscal_year = annual_cashflow.columns[i].strftime('%Y')
 
-        for i in range(num_years):
-        
-            ## Kennzahlen für Jahresberichte abrufen
-            # Fiscal Jahr
-            fiscal_year = annual_cashflow.columns[i].strftime('%Y')
+        # Operating Cash Flow
+        ops_cashflow = annual_cashflow.loc['Operating Cash Flow'][i] / 1e9 if 'Operating Cash Flow' in annual_cashflow.index else np.nan
 
-            # Operating Cash Flow
-            ops_cashflow = annual_cashflow.loc['Operating Cash Flow'][i] / 1e9 if 'Operating Cash Flow' in annual_cashflow.index else np.nan
+        # Investing Cash Flow
+        inv_cashflow = annual_cashflow.loc['Investing Cash Flow'][i] / 1e9 if 'Investing Cash Flow' in annual_cashflow.index else np.nan
 
-            # Investing Cash Flow
-            inv_cashflow = annual_cashflow.loc['Investing Cash Flow'][i] / 1e9 if 'Investing Cash Flow' in annual_cashflow.index else np.nan
-            
-            # Financing Cash Flow
-            fin_cashflow = annual_cashflow.loc['Finanzing Cash Flow'][i] / 1e9 if 'Finanzing Cash Flow' in annual_cashflow.index else np.nan
-            
-            # Free Cash Flow
-            fcf = annual_cashflow.loc['Free Cash Flow'][i] / 1e9 if 'Free Cash Flow' in annual_cashflow.index else np.nan
+        # Financing Cash Flow
+        fin_cashflow = annual_cashflow.loc['Financing Cash Flow'][i] / 1e9 if 'Financing Cash Flow' in annual_cashflow.index else np.nan
 
-            # Daten dem DataFrame hinzufügen
-            data_frame_fcf_others.loc[fiscal_year] = [ops_cashflow, inv_cashflow, fin_cashflow, fcf]
+        # Free Cash Flow
+        fcf = annual_cashflow.loc['Free Cash Flow'][i] / 1e9 if 'Free Cash Flow' in annual_cashflow.index else np.nan
 
-        ## Daten transponieren
-        data_frame_fcf_others = data_frame_fcf_others.transpose()
-        data_frame_fcf_others = data_frame_fcf_others.iloc[:, ::-1] # Spalten umkehren
-        data_frame_fcf_others = data_frame_fcf_others.round(n) # alle Zahlen auf n Nachkommastellen runden                        
+        # Daten dem DataFrame hinzufügen
+        data_frame_fcf_others.loc[fiscal_year] = [ops_cashflow, inv_cashflow, fin_cashflow, fcf]
+
+    ## Daten transponieren
+    data_frame_fcf_others = data_frame_fcf_others.transpose()
+    data_frame_fcf_others = data_frame_fcf_others.iloc[:, ::-1]  # Spalten umkehren
+    data_frame_fcf_others = data_frame_fcf_others.round(n)  # alle Zahlen auf n Nachkommastellen runden
+
+    # YoY-Berechnung für Free Cashflow
+    data_frame_fcf_others.loc['Free Cashflow YoY (%)'] = (data_frame_fcf_others.loc['Free Cashflow'].pct_change() * 100).round(2)
+
 else:
     st.text("Keine Jahresdaten verfügbar.")
+    
+# Reihenfolge der Kennzahlen und YoY-Werte anpassen
+new_order = ['Operating Cashflow', 'Investing Cashflow', 'Financing Cashflow', 'Free Cashflow', 'Free Cashflow YoY (%)']
+data_frame_fcf_others = data_frame_fcf_others.loc[new_order]
 ######################################################################################
 st.subheader("Kapitalfluss in Mrd.")
 st.dataframe(data_frame_fcf_others)
@@ -237,14 +277,14 @@ st.dataframe(data_frame_fcf_others)
 # Überprüfen, ob Jahresdaten verfügbar sind
 if not annual_cashflow.empty:
     available_years = annual_balance.shape[1]
-    num_years = available_years
+    num_years_balance = min(num_years_balance, available_years)
 
     # Kennzahlen für Jahresberichte abrufen
-    for i in range(num_years):
+    for i in range(num_years_balance):
 
         kennzahlen_balance_sheet = pd.DataFrame(columns=['Verschuldung', 'Eigenkapital', 'D/E Ratio', 'Inventar', 'Fertige Produkte', 'Anlagevermögen', 'Umlaufvermögen', 'Imaterielle Vermögenswerte', 'Summe Vermögen'])
 
-        for i in range(num_years):
+        for i in range(num_years_balance):
         
             ## Kennzahlen für Jahresberichte abrufen
             # Fiscal Jahr
