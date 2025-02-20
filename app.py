@@ -164,7 +164,8 @@ def calculate_and_display_gap(data, input_value, latest_price):
 
     with col2:
         # Anzeige des absoluten Gaps mit einer Nachkommastelle
-        st.metric(label="Absolutes Gap", value=f"{gap:.1f}")
+        #st.metric(label="Absolutes Gap", value=f"{gap:.1f}")
+        st.metric(label="Absolutes Gap", value={gap})
 
     with col3:
         # Anzeige des prozentualen Gaps mit einer Nachkommastelle
@@ -206,7 +207,7 @@ def embed_in_google_translate(url, target_lang='de'):
 # Daten aus yfinance holen und Ticker-Symbol
 # Liste der vordefinierten Optionen
 #options = ['NVD.DE', 'NVDA', 'ETH-EUR', 'ZAL.DE', 'TL0.DE', 'TSLA', 'YOU.DE', '47R.F', 'ZIP', 'HFG.DE', 'ARM', 'ONTO', 'NNM.F', 'VIST', '1CIA.F', '22UA.DE', 'BNTX', 'WLD-USD', 'RENDER-USD', 'META', 'ARGT', 'SMHN.DE', 'XDWT.MI']
-options = ['NVD.DE', 'NVDA', 'TL0.DE', 'TSLA', 'RIVN', 'HFG.DE', 'ARM', 'ONTO', 'NDIA.L', 'STERV.HE', 'BTC-EUR']
+options = ['NVD.DE', 'NVDA', 'TL0.DE', 'TSLA', 'RIVN', 'HFG.DE', 'ARM', 'ONTO', 'NDIA.L', 'STERV.HE', 'BTC-EUR', 'XIACF', 'BYDDF']
 # Layout, um die selectbox und das text_input nebeneinander anzuordnen
 col1, col2 = st.columns(2)
 
